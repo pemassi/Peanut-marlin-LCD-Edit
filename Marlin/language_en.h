@@ -213,7 +213,7 @@
 #define MSG_VOLUMETRIC                      "Filament"
 #endif
 #ifndef MSG_VOLUMETRIC_ENABLED
-#define MSG_VOLUMETRIC_ENABLED		          "E in mm" STR_h3
+#define MSG_VOLUMETRIC_ENABLED		          "E in mm" //STR_h3
 #endif
 #ifndef MSG_FILAMENT_SIZE_EXTRUDER_0
 #define MSG_FILAMENT_SIZE_EXTRUDER_0        "Fil. Dia. 1"
@@ -231,13 +231,13 @@
 #define MSG_CONTRAST                        "LCD contrast"
 #endif
 #ifndef MSG_STORE_EPROM
-#define MSG_STORE_EPROM                     "Store memory"
+#define MSG_STORE_EPROM                     "Save Setting"
 #endif
 #ifndef MSG_LOAD_EPROM
-#define MSG_LOAD_EPROM                      "Load memory"
+#define MSG_LOAD_EPROM                      "Load Setting"
 #endif
 #ifndef MSG_RESTORE_FAILSAFE
-#define MSG_RESTORE_FAILSAFE                "Restore failsafe"
+#define MSG_RESTORE_FAILSAFE                "Restore Setting"
 #endif
 #ifndef MSG_REFRESH
 #define MSG_REFRESH                         "Refresh"
