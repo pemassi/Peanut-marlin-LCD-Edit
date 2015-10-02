@@ -333,6 +333,17 @@ static void lcd_sdcard_stop()
 	lcd_setstatus(MSG_PRINT_ABORTED);
 }
 
+void lcd_cooldown()
+{
+    setTargetHotend0(0);
+    setTargetHotend1(0);
+    setTargetHotend2(0);
+    setTargetHotend3(0);
+    setTargetBed(0);
+    fanSpeed = 0;
+    lcd_return_to_status();
+}
+
 /* Menu implementation */
 static void lcd_main_menu()
 {
@@ -347,8 +358,9 @@ static void lcd_main_menu()
         MENU_ITEM(submenu, MSG_DELTA_CALIBRATE, lcd_delta_calibrate_menu);
 #endif // DELTA_CALIBRATION_MENU
     }
-/*JFR TEST*/            MENU_ITEM(gcode, "test multiline", PSTR("G4 S3\nM104 S50\nG4 S1\nM104 S200\nG4 S2\nM104 S0"));  // SD-card changed by user
     MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
+    MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
+    MENU_ITEM(gcode, "Check level", PSTR("G28\nG1 X100 Y0 F4000 \n G4 S5 \n G1 X100 Y100 \n G4 S5 \nG1 X0 Y100 \n G4 S5 \n G1 X0 Y0 \n G28"));
 #ifdef SDSUPPORT
     if (card.cardOK)
     {
@@ -372,6 +384,7 @@ static void lcd_main_menu()
 #endif
     }
 #endif
+    MENU_ITEM(gcode, "Made by pemassi", PSTR("M300 S300 P1000"));
     END_MENU();
 }
 
@@ -441,8 +454,8 @@ static void lcd_tune_menu()
 #endif
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
     MENU_ITEM_EDIT(int3, MSG_FLOW, &extrudemultiply, 10, 999);
-    MENU_ITEM_EDIT(int3, MSG_FLOW " 0", &extruder_multiply[0], 10, 999);
 #if TEMP_SENSOR_1 != 0
+    MENU_ITEM_EDIT(int3, MSG_FLOW " 0", &extruder_multiply[0], 10, 999);
     MENU_ITEM_EDIT(int3, MSG_FLOW " 1", &extruder_multiply[1], 10, 999);
 #endif
 #if TEMP_SENSOR_2 != 0
@@ -469,7 +482,7 @@ static void lcd_tune_menu()
 void lcd_preheat_pla0()
 {
     setTargetHotend0(plaPreheatHotendTemp);
-    setTargetBed(plaPreheatHPBTemp);
+    //setTargetBed(plaPreheatHPBTemp);
     fanSpeed = plaPreheatFanSpeed;
     lcd_return_to_status();
     setWatch(); // heater sanity check timer
@@ -591,22 +604,8 @@ static void lcd_preheat_pla_menu()
 {
   START_MENU();
   MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
-  MENU_ITEM(function, MSG_PREHEAT_PLA_N "1", lcd_preheat_pla0);
-#if TEMP_SENSOR_1 != 0 //2 extruder preheat
-  MENU_ITEM(function, MSG_PREHEAT_PLA_N "2", lcd_preheat_pla1);
-#endif //2 extruder preheat
-#if TEMP_SENSOR_2 != 0 //3 extruder preheat
-  MENU_ITEM(function, MSG_PREHEAT_PLA_N "3", lcd_preheat_pla2);
-#endif //3 extruder preheat
-#if TEMP_SENSOR_3 != 0 //4 extruder preheat
-  MENU_ITEM(function, MSG_PREHEAT_PLA_N "4", lcd_preheat_pla3);
-#endif //4 extruder preheat
-#if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 //all extruder preheat
-  MENU_ITEM(function, MSG_PREHEAT_PLA_ALL, lcd_preheat_pla0123);
-#endif //all extruder preheat
-#if TEMP_SENSOR_BED != 0
+  MENU_ITEM(function, MSG_PREHEAT_PLA_N, lcd_preheat_pla0);
   MENU_ITEM(function, MSG_PREHEAT_PLA_BEDONLY, lcd_preheat_pla_bedonly);
-#endif
   END_MENU();
 }
 
@@ -614,36 +613,11 @@ static void lcd_preheat_abs_menu()
 {
   START_MENU();
   MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
-  MENU_ITEM(function, MSG_PREHEAT_ABS_N "1", lcd_preheat_abs0);
-#if TEMP_SENSOR_1 != 0 //2 extruder preheat
-	MENU_ITEM(function, MSG_PREHEAT_ABS_N "2", lcd_preheat_abs1);
-#endif //2 extruder preheat
-#if TEMP_SENSOR_2 != 0 //3 extruder preheat
-  MENU_ITEM(function, MSG_PREHEAT_ABS_N "3", lcd_preheat_abs2);
-#endif //3 extruder preheat
-#if TEMP_SENSOR_3 != 0 //4 extruder preheat
-  MENU_ITEM(function, MSG_PREHEAT_ABS_N "4", lcd_preheat_abs3);
-#endif //4 extruder preheat
-#if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 //all extruder preheat
-  MENU_ITEM(function, MSG_PREHEAT_ABS_ALL, lcd_preheat_abs0123);
-#endif //all extruder preheat
-
-#if TEMP_SENSOR_BED != 0
- MENU_ITEM(function, MSG_PREHEAT_ABS_BEDONLY, lcd_preheat_abs_bedonly);
-#endif
+  MENU_ITEM(function, MSG_PREHEAT_ABS_N, lcd_preheat_abs0);
+  MENU_ITEM(function, MSG_PREHEAT_ABS_BEDONLY, lcd_preheat_abs_bedonly);
   END_MENU();
 }
 
-void lcd_cooldown()
-{
-    setTargetHotend0(0);
-    setTargetHotend1(0);
-    setTargetHotend2(0);
-    setTargetHotend3(0);
-    setTargetBed(0);
-    fanSpeed = 0;
-    lcd_return_to_status();
-}
 
 static void lcd_prepare_menu()
 {
@@ -667,7 +641,7 @@ static void lcd_prepare_menu()
     MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_abs0);
   #endif
 #endif
-    MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
+    
 #if PS_ON_PIN > -1
     if (powersupply)
     {
@@ -677,13 +651,18 @@ static void lcd_prepare_menu()
     }
 #endif
     MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu);
-		
+	
+    /*
+    int a = X_MAX_POS;
+    int b = Y_MAX_POS;
+    int c = Z_MAX_POS;
+    */
+    
     // JFR for RMud delta printer
-    MENU_ITEM(gcode, "Calibrate bed", PSTR("M702\nG28\nG1 X-77.94 Y-45 Z36 F8000\nG4 S3\nM701 P0\nG1 X77.94 Y-45 Z36\nG4 S3\nM701 P1\nG1 X0 Y90 Z36\nG4 S3\nM701 P2\nM700\nG1 X0 Y0 Z100 F8000"));
-    MENU_ITEM(gcode, "Check level", PSTR("G28\nG1 X0 Y0 Z1 F4000\nG1 X-77.94 Y-45 Z1\nG1 X77.94 Y-45\nG1 X0 Y90\nG1 X-77.94 Y-45\nG4 S2\nG1 X-77.94 Y-45 Z0.3 F2000\nG1 X-77.94 Y-45\nG1 X77.94 Y-45\nG1 X0 Y90\nG1 X-77.94 Y-45\nG1 X0 Y0 Z0"));
-    MENU_ITEM(gcode, "Retract filament", PSTR("M302\nM82\nG92 E0\nG1 F4000 E-800"));
-    MENU_ITEM(gcode, "Insert filament", PSTR("M302\nM82\nG92 E0\nG1 F4000 E60"));
-    MENU_ITEM(gcode, "Finalize filament", PSTR("G1 F4000 E790"));
+    //MENU_ITEM(gcode, "Check Z", PSTR("G28\nG1 Z30 F8000\nG4 S3\nG1 Z100 F8000"));
+    //MENU_ITEM(gcode, "Retract filament", PSTR("M302\nM82\nG92 E0\nG1 F4000 E-800"));
+    //MENU_ITEM(gcode, "Insert filament", PSTR("M302\nM82\nG92 E0\nG1 F4000 E60"));
+    //MENU_ITEM(gcode, "Finalize filament", PSTR("G1 F4000 E790"));
     END_MENU();
 }
 
@@ -1183,10 +1162,12 @@ static void menu_action_sdfile(const char* filename, char* longFilename)
 {
     char cmd[30];
     char* c;
+    //Get File Name
     sprintf_P(cmd, PSTR("M23 %s"), filename);
     for(c = &cmd[4]; *c; c++)
         *c = tolower(*c);
     enquecommand(cmd);
+    
     enquecommands_P(PSTR("M24"));
     lcd_return_to_status();
 }
